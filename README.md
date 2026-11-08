@@ -15,7 +15,6 @@ docker compose up -d
 ./gradlew bootRun
 ```
 
-- Swagger: http://localhost:8080/swagger-ui/index.html
 - API 명세·ERD: 노션 "명세서" 페이지
 
 ## 패키지 구조 (도메인별)
@@ -26,7 +25,7 @@ com.ganzithon.motdahan
 │   ├── response            ApiResponse { success, data, error }
 │   ├── exception           ErrorCode(에러 코드 전체), BusinessException, GlobalExceptionHandler
 │   ├── security            JWT 발급·검증, 인증 필터, 401 응답
-│   ├── config              Security(CORS 포함), Swagger, JPA Auditing
+│   ├── config              Security(CORS 포함), JPA Auditing
 │   ├── entity              BaseTimeEntity (created_at, updated_at)
 │   └── logging             요청 로그 (본문은 남기지 않음)
 └── domain

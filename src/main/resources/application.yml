@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: motdahan
+  profiles:
+    default: local
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
+  servlet:
+    multipart:
+      # 녹음 파일 크기 제한 (넘으면 STT_002)
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 7d

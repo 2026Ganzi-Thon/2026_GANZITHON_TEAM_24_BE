@@ -31,7 +31,10 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "내 정보 조회", description = "background는 홈 화면 배경 선택지 이름(기본 DEFAULT)")
+    @Operation(summary = "내 정보 조회", description = """
+            - background: 홈 화면 배경 선택지 이름(기본 DEFAULT). 배경은 사용자 전체에 1개
+            - recentCharacter: 가장 최근에 사용한 캐릭터(마이페이지 프로필 이미지용). 없으면 null → 기본 말랑이 표시
+            """)
     @GetMapping
     public ApiResponse<MeResponse> getMe(@Parameter(hidden = true) @AuthenticationPrincipal AuthUser user) {
         return ApiResponse.ok(userService.getMe(user.id()));

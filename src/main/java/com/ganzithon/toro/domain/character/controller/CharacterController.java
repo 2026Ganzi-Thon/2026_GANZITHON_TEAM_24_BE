@@ -45,7 +45,8 @@ public class CharacterController {
     }
 
     @Operation(summary = "캐릭터 만들기", description = """
-            '이 캐릭터로 하소연 시작'을 누를 때 호출(별도 저장 버튼 없음). lastUsedAt은 지금 시각.
+            커스터마이징 화면의 '저장' 버튼에서 호출하고, 성공하면 메인으로 간다. lastUsedAt은 지금 시각(목록 맨 앞).
+            같은 화면에서 고른 배경은 캐릭터가 아니라 사용자 전체 설정이라 PATCH /api/v1/users/me {background}를 따로 부른다.
             이미 3개면 교체할 캐릭터를 골라 replaceId에 넣어 다시 호출한다. 3개 미만이면 replaceId는 무시.
 
             에러: CHAR_003(409) 이미 3개인데 replaceId 없음 · CHAR_001(404) replaceId가 내 캐릭터가 아님 ·

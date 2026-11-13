@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Swagger UI: /swagger-ui/index.html (오른쪽 위 Authorize에 로그인 응답의 accessToken만 넣으면 됨)
- * 명세 파일: /v3/api-docs → docs/openapi.json 으로 저장해 프론트와 공유한다.
+ * 명세 파일: /v3/api-docs → docs/openapi.json 으로 저장해 프론트에 따로 공유한다(git에는 안 올림).
  */
 @Configuration
 public class SwaggerConfig {

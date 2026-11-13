@@ -54,3 +54,6 @@ GEMINI.md
 .cursor/
 .cursorrules
 .github/copilot-instructions.md
+
+### Swagger 명세 파일 (레포에 안 올리고 따로 공유) ###
+docs/openapi.json

@@ -19,6 +19,8 @@ public enum ErrorCode {
     // 인증
     EMAIL_DUPLICATED(HttpStatus.CONFLICT, "AUTH_001", "이미 가입된 이메일입니다."),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "AUTH_002", "이메일 또는 비밀번호가 틀렸습니다."),
+    WRONG_CURRENT_PASSWORD(HttpStatus.BAD_REQUEST, "AUTH_003", "현재 비밀번호가 틀렸습니다."),
+    NICKNAME_DUPLICATED(HttpStatus.CONFLICT, "AUTH_004", "이미 사용 중인 닉네임입니다."),
 
     // 캐릭터
     CHARACTER_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAR_001", "캐릭터를 찾을 수 없습니다."),

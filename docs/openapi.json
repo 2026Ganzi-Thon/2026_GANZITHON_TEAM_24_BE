@@ -1,0 +1,941 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "토로(TORO) API",
+        "description": "## 공통\n- 모든 응답: `{ \"success\": boolean, \"data\": ..., \"error\": { \"code\", \"message\" } | null }`\n- 아래 각 API의 응답 예시는 `data` 안의 모양이다. DELETE와 비밀번호 변경은 204(본문 없음)\n- 토큰: 로그인 응답의 `accessToken`을 `Authorization: Bearer {토큰}`으로 보낸다. 유효 7일\n- 토큰 없이 부르는 API: 회원가입, 로그인, 이메일·닉네임 중복 확인\n- 프론트는 `error.code`로 분기하고 화면 문구는 code별로 정한다\n\n## 공통 에러\n| 코드 | HTTP | 뜻 |\n|---|---|---|\n| COMMON_001 | 400 | 입력값 형식 오류. message 앞에 필드 이름이 붙음 (예: `nickname: 한글·영문·숫자 1~10자여야 합니다`) |\n| COMMON_002 | 401 | 토큰이 없거나 만료, 탈퇴한 계정 → 토큰 지우고 로그인 화면으로 |\n| COMMON_003 | 500 | 서버 오류 |\n",
+        "version": "v1"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "로컬 기본 주소"
+        },
+        {
+            "url": "/",
+            "description": "Swagger UI를 연 서버"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "3. 캐릭터",
+            "description": "사용자가 꾸민 캐릭터(최대 3개). 기본 캐릭터 말랑이는 서버에 없고 프론트 고정값이다. 토큰 필요.\n꾸미기 항목(color, eyes, nose, mouth, eyebrows, accessory)은 모두 1개만 고르고, 프론트 선택지 이름을 문자로 보낸다(20자 이내).\n코·눈썹이 없으면 \"NONE\", 장신구가 없으면 null. 선택지 목록과 3D 파일은 프론트가 가진다.\n캐릭터 이름: 한글·영문·숫자 1~10자. 연락처·이메일·@아이디·URL 모양이면 CHAR_004.\n"
+        },
+        {
+            "name": "2. 마이페이지",
+            "description": "내 정보 조회·수정, 탈퇴. 토큰 필요"
+        },
+        {
+            "name": "1. 인증",
+            "description": "회원가입·로그인. 토큰 없이 부른다"
+        }
+    ],
+    "paths": {
+        "/api/v1/characters/{id}": {
+            "put": {
+                "tags": [
+                    "3. 캐릭터"
+                ],
+                "summary": "캐릭터 다시 꾸미기",
+                "description": "모든 항목을 보낸 값으로 바꾼다. 목록 순서(lastUsedAt)는 바뀌지 않는다.\n\n에러: CHAR_001(404) 없거나 내 캐릭터가 아님 · CHAR_004(400) · COMMON_001(400)\n",
+                "operationId": "update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CharacterUpdateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseCharacterResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "3. 캐릭터"
+                ],
+                "summary": "캐릭터 지우기",
+                "description": "204(본문 없음). 에러: CHAR_001(404) 없거나 내 캐릭터가 아님",
+                "operationId": "delete",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/characters": {
+            "get": {
+                "tags": [
+                    "3. 캐릭터"
+                ],
+                "summary": "내 캐릭터 목록",
+                "description": "최근 사용순(lastUsedAt). \"3일 전 사용\" 같은 표시는 lastUsedAt으로 계산",
+                "operationId": "list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseCharacterListResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "3. 캐릭터"
+                ],
+                "summary": "캐릭터 만들기",
+                "description": "'이 캐릭터로 하소연 시작'을 누를 때 호출(별도 저장 버튼 없음). lastUsedAt은 지금 시각.\n이미 3개면 교체할 캐릭터를 골라 replaceId에 넣어 다시 호출한다. 3개 미만이면 replaceId는 무시.\n\n에러: CHAR_003(409) 이미 3개인데 replaceId 없음 · CHAR_001(404) replaceId가 내 캐릭터가 아님 ·\nCHAR_004(400) 이름에 연락처·이메일·SNS 계정 · COMMON_001(400) 형식 오류\n",
+                "operationId": "create",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CharacterCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseCharacterCreateResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/characters/{id}/use": {
+            "post": {
+                "tags": [
+                    "3. 캐릭터"
+                ],
+                "summary": "캐릭터 사용 표시",
+                "description": "홈에서 저장된 캐릭터를 골라 하소연을 시작할 때 호출. lastUsedAt을 지금으로 바꿔 목록 맨 앞으로 온다.\n새로 만든 캐릭터(만들 때 이미 갱신)와 기본 말랑이는 부르지 않는다. 실패해도 하소연은 그냥 진행해도 된다.\n\n에러: CHAR_001(404) 없거나 내 캐릭터가 아님\n",
+                "operationId": "markUsed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseCharacterUseResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/signup": {
+            "post": {
+                "tags": [
+                    "1. 인증"
+                ],
+                "summary": "회원가입",
+                "description": "- 비밀번호: 영문과 숫자를 모두 포함해 8~13자. 특수문자 가능, 공백 불가. (비밀번호 확인 칸은 프론트에서만 비교)\n- 닉네임: 한글·영문·숫자 1~10자, 공백·특수문자 불가, 다른 사람과 중복 불가(대소문자 구분 없음)\n- 필수 약관 2개(agreeTerms, agreePrivacy) 모두 true. 선택 약관 1개는 미확정이라 아직 안 받음\n- 성공하면 토큰 없이 userId만 온다 → 로그인 화면으로\n\n에러: AUTH_001(409) 이미 가입된 이메일 · AUTH_004(409) 이미 사용 중인 닉네임 · COMMON_001(400) 형식 오류·약관 미동의\n",
+                "operationId": "signup",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SignupRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseSignupResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "1. 인증"
+                ],
+                "summary": "로그인",
+                "description": "- 응답의 accessToken을 이후 모든 요청 헤더에 `Authorization: Bearer {토큰}`으로 넣는다. expiresIn은 초(7일)\n- 로그인하면 항상 홈으로. hasCharacter는 저장된 캐릭터가 1개 이상인지(홈 표시용)\n\n에러: AUTH_002(401) 이메일 또는 비밀번호가 틀림. (COMMON_002도 401이니 꼭 code로 구분)\n",
+                "operationId": "login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseLoginResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/v1/users/me": {
+            "get": {
+                "tags": [
+                    "2. 마이페이지"
+                ],
+                "summary": "내 정보 조회",
+                "description": "background는 홈 화면 배경 선택지 이름(기본 DEFAULT)",
+                "operationId": "getMe",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseMeResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "2. 마이페이지"
+                ],
+                "summary": "회원 탈퇴",
+                "description": "계정과 캐릭터를 모두 지운다. 204(본문 없음). 이후 토큰은 COMMON_002",
+                "operationId": "withdraw",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "2. 마이페이지"
+                ],
+                "summary": "닉네임·홈 배경 수정",
+                "description": "보낸 필드만 바뀐다(둘 다 선택). 닉네임 규칙은 회원가입과 같다. 배경은 선택지 이름 1~20자.\n닉네임을 바꿔도 토큰은 그대로 쓰면 된다.\n\n에러: AUTH_004(409) 다른 사람이 쓰는 닉네임 · COMMON_001(400) 형식 오류\n",
+                "operationId": "updateMe",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateMeRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseMeResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/me/password": {
+            "patch": {
+                "tags": [
+                    "2. 마이페이지"
+                ],
+                "summary": "비밀번호 변경",
+                "description": "새 비밀번호 규칙은 회원가입과 같다(영문+숫자 8~13자). 204(본문 없음). 토큰은 그대로 쓰면 된다.\n\n에러: AUTH_003(400) 현재 비밀번호가 틀림 · COMMON_001(400) 새 비밀번호 형식 오류\n",
+                "operationId": "changePassword",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangePasswordRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/users/me/email": {
+            "patch": {
+                "tags": [
+                    "2. 마이페이지"
+                ],
+                "summary": "아이디(이메일) 변경",
+                "description": "본인 확인을 위해 현재 비밀번호가 필요하다. 토큰은 그대로 쓰면 된다.\n\n에러: AUTH_003(400) 현재 비밀번호가 틀림(로그아웃되지 않게 401이 아니라 400) · AUTH_001(409) 다른 사람이 쓰는 이메일\n",
+                "operationId": "changeEmail",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangeEmailRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseEmailResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/nickname-check": {
+            "get": {
+                "tags": [
+                    "1. 인증"
+                ],
+                "summary": "닉네임 중복 확인",
+                "description": "쓸 수 있으면 available=true. 대소문자 구분 없이 비교. 닉네임 규칙(한글·영문·숫자 1~10자)에 안 맞으면 COMMON_001.\n확인 뒤 가입 전에 다른 사람이 먼저 쓰면 회원가입에서 AUTH_004가 올 수 있다.\n",
+                "operationId": "checkNickname",
+                "parameters": [
+                    {
+                        "name": "nickname",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[ㄱ-ㅎㅏ-ㅣ가-힣A-Za-z0-9]{1,10}$"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseAvailabilityResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/v1/auth/email-check": {
+            "get": {
+                "tags": [
+                    "1. 인증"
+                ],
+                "summary": "이메일 중복 확인",
+                "description": "쓸 수 있으면 available=true. 이메일 형식이 아니면 COMMON_001",
+                "operationId": "checkEmail",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "email",
+                            "maxLength": 255,
+                            "minLength": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponseAvailabilityResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CharacterUpdateRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "color": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "eyes": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "nose": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "mouth": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "eyebrows": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "accessory": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "color",
+                    "eyebrows",
+                    "eyes",
+                    "mouth",
+                    "name",
+                    "nose"
+                ]
+            },
+            "ApiResponseCharacterResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/CharacterResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                }
+            },
+            "CharacterResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "eyes": {
+                        "type": "string"
+                    },
+                    "nose": {
+                        "type": "string"
+                    },
+                    "mouth": {
+                        "type": "string"
+                    },
+                    "eyebrows": {
+                        "type": "string"
+                    },
+                    "accessory": {
+                        "type": "string"
+                    },
+                    "lastUsedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ErrorBody": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CharacterCreateRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "color": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "eyes": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "nose": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "mouth": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "eyebrows": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "accessory": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "replaceId": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "color",
+                    "eyebrows",
+                    "eyes",
+                    "mouth",
+                    "name",
+                    "nose"
+                ]
+            },
+            "ApiResponseCharacterCreateResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/CharacterCreateResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                }
+            },
+            "CharacterCreateResponse": {
+                "type": "object",
+                "properties": {
+                    "character": {
+                        "$ref": "#/components/schemas/CharacterResponse"
+                    }
+                }
+            },
+            "ApiResponseCharacterUseResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/CharacterUseResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                }
+            },
+            "CharacterUseResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "lastUsedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "SignupRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "minLength": 0
+                    },
+                    "password": {
+                        "type": "string",
+                        "pattern": "^(?=.*[A-Za-z])(?=.*\\d)[!-~]{8,13}$"
+                    },
+                    "nickname": {
+                        "type": "string",
+                        "pattern": "^[ㄱ-ㅎㅏ-ㅣ가-힣A-Za-z0-9]{1,10}$"
+                    },
+                    "agreeTerms": {
+                        "type": "boolean"
+                    },
+                    "agreePrivacy": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "agreePrivacy",
+                    "agreeTerms",
+                    "email",
+                    "nickname",
+                    "password"
+                ]
+            },
+            "ApiResponseSignupResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/SignupResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                }
+            },
+            "SignupResponse": {
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "LoginRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "required": [
+                    "email",
+                    "password"
+                ]
+            },
+            "ApiResponseLoginResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/LoginResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                }
+            },
+            "LoginResponse": {
+                "type": "object",
+                "properties": {
+                    "accessToken": {
+                        "type": "string"
+                    },
+                    "expiresIn": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/LoginUser"
+                    },
+                    "hasCharacter": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "LoginUser": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "nickname": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UpdateMeRequest": {
+                "type": "object",
+                "properties": {
+                    "nickname": {
+                        "type": "string",
+                        "pattern": "^[ㄱ-ㅎㅏ-ㅣ가-힣A-Za-z0-9]{1,10}$"
+                    },
+                    "background": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 1
+                    }
+                }
+            },
+            "ApiResponseMeResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/MeResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                }
+            },
+            "MeResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "nickname": {
+                        "type": "string"
+                    },
+                    "background": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ChangePasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "currentPassword": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "newPassword": {
+                        "type": "string",
+                        "pattern": "^(?=.*[A-Za-z])(?=.*\\d)[!-~]{8,13}$"
+                    }
+                },
+                "required": [
+                    "currentPassword",
+                    "newPassword"
+                ]
+            },
+            "ChangeEmailRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "minLength": 0
+                    },
+                    "currentPassword": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "required": [
+                    "currentPassword",
+                    "email"
+                ]
+            },
+            "ApiResponseEmailResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/EmailResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                }
+            },
+            "EmailResponse": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ApiResponseCharacterListResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/CharacterListResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                }
+            },
+            "CharacterListResponse": {
+                "type": "object",
+                "properties": {
+                    "characters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CharacterResponse"
+                        }
+                    }
+                }
+            },
+            "ApiResponseAvailabilityResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/AvailabilityResponse"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/ErrorBody"
+                    }
+                }
+            },
+            "AvailabilityResponse": {
+                "type": "object",
+                "properties": {
+                    "available": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}

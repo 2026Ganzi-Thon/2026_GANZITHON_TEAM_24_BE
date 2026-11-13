@@ -1,4 +1,4 @@
-# 못다한 대화 - Backend
+# 토로(TORO) - Backend
 
 Java 21 · Spring Boot 3.5 · Gradle(Groovy) · MySQL 8 · JWT
 
@@ -16,11 +16,14 @@ docker compose up -d
 ```
 
 - API 명세·ERD: 노션 "명세서" 페이지
+- Swagger: 서버 실행 후 http://localhost:8080/swagger-ui/index.html (Authorize에 로그인 토큰 입력)
+- 프론트 공유용 명세 파일: `docs/openapi.json` → https://editor.swagger.io 에 붙여 넣거나 Postman에서 Import
+  - API를 바꾸면 서버를 켠 상태에서 다시 뽑는다: `curl -s localhost:8080/v3/api-docs | python3 -m json.tool > docs/openapi.json`
 
 ## 패키지 구조 (도메인별)
 
 ```
-com.ganzithon.motdahan
+com.ganzithon.toro
 ├── global                  공통 모듈
 │   ├── response            ApiResponse { success, data, error }
 │   ├── exception           ErrorCode(에러 코드 전체), BusinessException, GlobalExceptionHandler
@@ -33,8 +36,7 @@ com.ganzithon.motdahan
     ├── user                /api/v1/users
     ├── character           /api/v1/characters
     ├── stt                 /api/v1/stt
-    ├── vent                /api/v1/vent
-    └── reflect             /api/v1/reflect
+    └── vent                /api/v1/vent
 ```
 
 도메인 안은 `controller / service / repository / entity / dto` 로 나눈다.

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: motdahan
+    name: toro
   profiles:
     default: local
   jpa:
@@ -18,3 +18,7 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration: 7d
+
+app:
+  # 회원가입 때 저장하는 약관 버전. 약관 내용이 바뀌면 올린다
+  terms-version: 2026-11-v1

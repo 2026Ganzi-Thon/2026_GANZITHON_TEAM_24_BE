@@ -2,9 +2,9 @@
 #   cp src/main/resources/application-local.yml.example src/main/resources/application-local.yml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/motdahan?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: motdahan
-    password: motdahan-local
+    url: jdbc:mysql://localhost:3306/toro?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: toro
+    password: toro-local
   jpa:
     hibernate:
       ddl-auto: update
@@ -18,6 +18,5 @@ jwt:
   secret: local-only-secret-change-me-0123456789abcdef
 
 cors:
-  allowed-origins:
-    - http://localhost:3000
-    - http://localhost:5173
+  # 쉼표로 구분 (@Value로 읽어서 YAML 목록 형식은 안 됨)
+  allowed-origins: http://localhost:3000,http://localhost:5173

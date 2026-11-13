@@ -2,13 +2,13 @@
 services:
   mysql:
     image: mysql:8.4
-    container_name: motdahan-mysql
+    container_name: toro-mysql
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: motdahan
-      MYSQL_USER: motdahan
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-motdahan-local}
+      MYSQL_DATABASE: toro
+      MYSQL_USER: toro
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-toro-local}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root-local}
       TZ: Asia/Seoul
     command:

@@ -38,9 +38,7 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 10)
     private String nickname;
 
-    @Column(nullable = false, columnDefinition = "DATETIME(6)")
-    private LocalDateTime termsAgreedAt;
-
+    /** 개인정보 수집·이용 동의 시각 (약관은 이것 1개) */
     @Column(nullable = false, columnDefinition = "DATETIME(6)")
     private LocalDateTime privacyAgreedAt;
 
@@ -58,7 +56,6 @@ public class User extends BaseTimeEntity {
         user.password = encodedPassword;
         user.nickname = nickname;
         user.termsVersion = termsVersion;
-        user.termsAgreedAt = agreedAt;
         user.privacyAgreedAt = agreedAt;
         return user;
     }

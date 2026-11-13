@@ -13,6 +13,9 @@ public interface CharacterRepository extends JpaRepository<UserCharacter, Long> 
     /** 최근 사용순. 같은 시각이면 나중에 만든 것 먼저 */
     List<UserCharacter> findAllByUserIdOrderByLastUsedAtDescIdDesc(Long userId);
 
+    /** 가장 최근에 사용한 캐릭터 (마이페이지 프로필 이미지) */
+    Optional<UserCharacter> findFirstByUserIdOrderByLastUsedAtDescIdDesc(Long userId);
+
     long countByUserId(Long userId);
 
     boolean existsByUserId(Long userId);

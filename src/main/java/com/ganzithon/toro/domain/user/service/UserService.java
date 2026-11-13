@@ -1,5 +1,6 @@
 package com.ganzithon.toro.domain.user.service;
 
+import com.ganzithon.toro.domain.character.dto.CharacterResponse;
 import com.ganzithon.toro.domain.character.repository.CharacterRepository;
 import com.ganzithon.toro.domain.user.UserRules;
 import com.ganzithon.toro.domain.user.dto.ChangeEmailRequest;
@@ -36,7 +37,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public MeResponse getMe(Long userId) {
-        return MeResponse.from(getUser(userId));
+        return toMeResponse(getUser(userId));
     }
 
     @Transactional
@@ -55,7 +56,15 @@ public class UserService {
             user.changeBackground(request.background());
         }
         flushOrDuplicate();
-        return MeResponse.from(user);
+        return toMeResponse(user);
+    }
+
+    /** 마이페이지 프로필 이미지로 쓸 최근 사용 캐릭터를 같이 담는다 */
+    private MeResponse toMeResponse(User user) {
+        CharacterResponse recent = characterRepository.findFirstByUserIdOrderByLastUsedAtDescIdDesc(user.getId())
+                .map(CharacterResponse::from)
+                .orElse(null);
+        return MeResponse.of(user, recent);
     }
 
     @Transactional

@@ -17,8 +17,9 @@ docker compose up -d
 
 - API 명세·ERD: 노션 "명세서" 페이지
 - Swagger: 서버 실행 후 http://localhost:8080/swagger-ui/index.html (Authorize에 로그인 토큰 입력)
-- 프론트 공유용 명세 파일: `docs/openapi.json` → https://editor.swagger.io 에 붙여 넣거나 Postman에서 Import
-  - API를 바꾸면 서버를 켠 상태에서 다시 뽑는다: `curl -s localhost:8080/v3/api-docs | python3 -m json.tool > docs/openapi.json`
+- 프론트 공유용 명세 파일은 레포에 올리지 않고 따로 공유한다 (`docs/openapi.json`은 git에서 제외)
+  - 서버를 켠 상태에서 뽑는다: `mkdir -p docs && curl -s localhost:8080/v3/api-docs | python3 -m json.tool > docs/openapi.json`
+  - 받은 쪽은 https://editor.swagger.io 에 붙여 넣거나 Postman에서 Import
 
 ## 패키지 구조 (도메인별)
 

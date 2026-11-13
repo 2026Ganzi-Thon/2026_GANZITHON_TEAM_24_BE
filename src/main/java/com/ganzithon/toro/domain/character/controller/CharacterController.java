@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "3. 캐릭터", description = """
         사용자가 꾸민 캐릭터(최대 3개). 기본 캐릭터 말랑이는 서버에 없고 프론트 고정값이다. 토큰 필요.
         꾸미기 항목(color, eyes, nose, mouth, eyebrows, accessory)은 모두 1개만 고르고, 프론트 선택지 이름을 문자로 보낸다(20자 이내).
-        코·눈썹이 없으면 "NONE", 장신구가 없으면 null. 선택지 목록과 3D 파일은 프론트가 가진다.
+        눈·코·입·눈썹·색상은 반드시 하나씩(빈 값이면 COMMON_001), 장신구만 안 골라도 되고 그때는 null. 선택지 목록과 3D 파일은 프론트가 가진다.
         캐릭터 이름: 한글·영문·숫자 1~10자. 연락처·이메일·@아이디·URL 모양이면 CHAR_004.
         """)
 @RestController

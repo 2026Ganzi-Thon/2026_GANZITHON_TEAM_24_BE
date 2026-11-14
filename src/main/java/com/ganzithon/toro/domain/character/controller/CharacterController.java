@@ -27,8 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "3. 캐릭터", description = """
         사용자가 꾸민 캐릭터(최대 3개). 기본 캐릭터 말랑이는 서버에 없고 프론트 고정값이다. 토큰 필요.
-        꾸미기 항목(color, eyes, nose, mouth, eyebrows, accessory)은 모두 1개만 고르고, 프론트 선택지 이름을 문자로 보낸다(20자 이내).
-        눈·코·입·눈썹·색상은 반드시 하나씩(빈 값이면 COMMON_001), 장신구만 안 골라도 되고 그때는 null. 선택지 목록과 3D 파일은 프론트가 가진다.
+        꾸미기 항목은 모두 1개만 고른다. 허용 값 밖이면 CHAR_002(400).
+        - 눈 eyes·입 mouth·눈썹 eyebrows: STYLE_1~6 (필수)
+        - 코 nose·악세서리 accessory: STYLE_1~6. 선택 안 함은 "" → 응답도 ""
+        - 색상 color: PEACH, PINK, YELLOW, GRAY, BLUE, MINT, LAVENDER (필수)
+        - 배경은 캐릭터가 아니라 사용자 설정이라 PATCH /api/v1/users/me 의 background로 보낸다
+        날짜(lastUsedAt, updatedAt)는 한국 시간 +09:00. 선택지 그림(3D 파일)은 프론트가 가진다.
         캐릭터 이름: 한글·영문·숫자 1~10자. 연락처·이메일·@아이디·URL 모양이면 CHAR_004.
         """)
 @RestController
@@ -50,7 +54,7 @@ public class CharacterController {
             이미 3개면 교체할 캐릭터를 골라 replaceId에 넣어 다시 호출한다. 3개 미만이면 replaceId는 무시.
 
             에러: CHAR_003(409) 이미 3개인데 replaceId 없음 · CHAR_001(404) replaceId가 내 캐릭터가 아님 ·
-            CHAR_004(400) 이름에 연락처·이메일·SNS 계정 · COMMON_001(400) 형식 오류
+            CHAR_002(400) 허용 값 밖 · CHAR_004(400) 이름에 연락처·이메일·SNS 계정 · COMMON_001(400) 형식 오류
             """)
     @PostMapping
     public ApiResponse<CharacterCreateResponse> create(@Parameter(hidden = true) @AuthenticationPrincipal AuthUser user,
@@ -61,7 +65,7 @@ public class CharacterController {
     @Operation(summary = "캐릭터 다시 꾸미기", description = """
             모든 항목을 보낸 값으로 바꾼다. 목록 순서(lastUsedAt)는 바뀌지 않는다.
 
-            에러: CHAR_001(404) 없거나 내 캐릭터가 아님 · CHAR_004(400) · COMMON_001(400)
+            에러: CHAR_001(404) 없거나 내 캐릭터가 아님 · CHAR_002(400) · CHAR_004(400) · COMMON_001(400)
             """)
     @PutMapping("/{id}")
     public ApiResponse<CharacterResponse> update(@Parameter(hidden = true) @AuthenticationPrincipal AuthUser user,

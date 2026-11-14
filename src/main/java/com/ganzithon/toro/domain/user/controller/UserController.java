@@ -32,7 +32,8 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "내 정보 조회", description = """
-            - background: 홈 화면 배경 선택지 이름(기본 DEFAULT). 배경은 사용자 전체에 1개
+            - background: 배경(사용자 전체에 1개). READING, TERRACE, KITCHEN, STUDIO, GREEN, DEFAULT(기본)
+            - createdAt 등 날짜는 한국 시간 +09:00
             - recentCharacter: 가장 최근에 사용한 캐릭터(마이페이지 프로필 이미지용). 없으면 null → 기본 말랑이 표시
             """)
     @GetMapping
@@ -48,10 +49,11 @@ public class UserController {
     }
 
     @Operation(summary = "닉네임·홈 배경 수정", description = """
-            보낸 필드만 바뀐다(둘 다 선택). 닉네임 규칙은 회원가입과 같다. 배경은 선택지 이름 1~20자.
+            보낸 필드만 바뀐다(둘 다 선택). 닉네임 규칙은 회원가입과 같다.
+            배경: READING, TERRACE, KITCHEN, STUDIO, GREEN, DEFAULT 중 하나(아니면 CHAR_002).
             닉네임을 바꿔도 토큰은 그대로 쓰면 된다.
 
-            에러: AUTH_004(409) 다른 사람이 쓰는 닉네임 · COMMON_001(400) 형식 오류
+            에러: AUTH_004(409) 다른 사람이 쓰는 닉네임 · CHAR_002(400) 없는 배경 · COMMON_001(400) 형식 오류
             """)
     @PatchMapping
     public ApiResponse<MeResponse> updateMe(@Parameter(hidden = true) @AuthenticationPrincipal AuthUser user,

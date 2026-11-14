@@ -49,7 +49,8 @@ public class UserCharacter extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private String eyes;
 
-    @Column(nullable = false, length = 20)
+    /** 안 고르면 null */
+    @Column(length = 20)
     private String nose;
 
     @Column(nullable = false, length = 20)

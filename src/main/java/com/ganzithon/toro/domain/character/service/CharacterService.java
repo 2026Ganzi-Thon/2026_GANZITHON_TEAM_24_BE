@@ -1,5 +1,6 @@
 package com.ganzithon.toro.domain.character.service;
 
+import com.ganzithon.toro.domain.character.CharacterOptions;
 import com.ganzithon.toro.domain.character.dto.CharacterCreateRequest;
 import com.ganzithon.toro.domain.character.dto.CharacterCreateResponse;
 import com.ganzithon.toro.domain.character.dto.CharacterListResponse;
@@ -12,6 +13,7 @@ import com.ganzithon.toro.domain.user.entity.User;
 import com.ganzithon.toro.domain.user.repository.UserRepository;
 import com.ganzithon.toro.global.exception.BusinessException;
 import com.ganzithon.toro.global.exception.ErrorCode;
+import com.ganzithon.toro.global.time.KoreaTime;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,7 @@ public class CharacterService {
     @Transactional
     public CharacterCreateResponse create(Long userId, CharacterCreateRequest request) {
         nameValidator.validate(request.name());
+        CharacterOptions.validate(request);
         User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
 
@@ -65,6 +68,7 @@ public class CharacterService {
     @Transactional
     public CharacterResponse update(Long userId, Long characterId, CharacterUpdateRequest request) {
         nameValidator.validate(request.name());
+        CharacterOptions.validate(request);
         UserCharacter character = findMine(characterId, userId);
         character.apply(request);
         characterRepository.flush(); // updatedAt을 응답에 담으려고 먼저 반영
@@ -81,7 +85,7 @@ public class CharacterService {
     public CharacterUseResponse markUsed(Long userId, Long characterId) {
         UserCharacter character = findMine(characterId, userId);
         character.markUsed(LocalDateTime.now());
-        return new CharacterUseResponse(character.getId(), character.getLastUsedAt());
+        return new CharacterUseResponse(character.getId(), KoreaTime.withOffset(character.getLastUsedAt()));
     }
 
     /** 내 캐릭터가 아니거나 없으면 CHAR_001 (남의 것인지 구분해서 알려 주지 않는다) */

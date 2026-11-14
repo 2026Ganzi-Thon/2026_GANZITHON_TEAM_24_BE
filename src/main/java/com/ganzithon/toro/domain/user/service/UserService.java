@@ -1,5 +1,6 @@
 package com.ganzithon.toro.domain.user.service;
 
+import com.ganzithon.toro.domain.character.CharacterOptions;
 import com.ganzithon.toro.domain.character.dto.CharacterResponse;
 import com.ganzithon.toro.domain.character.repository.CharacterRepository;
 import com.ganzithon.toro.domain.user.UserRules;
@@ -53,6 +54,7 @@ public class UserService {
             user.changeNickname(nickname);
         }
         if (request.background() != null) {
+            CharacterOptions.validateBackground(request.background());
             user.changeBackground(request.background());
         }
         flushOrDuplicate();

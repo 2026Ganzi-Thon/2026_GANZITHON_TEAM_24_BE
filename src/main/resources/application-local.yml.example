@@ -26,3 +26,7 @@ cors:
 # 또는 복사한 application-local.yml에만 다음 설정을 추가한다.
 # upstage:
 #   api-key: "발급받은 키"
+
+# Groq도 복사한 application-local.yml 또는 GROQ_API_KEY 환경변수에만 입력한다.
+# groq:
+#   api-key: "발급받은 키"

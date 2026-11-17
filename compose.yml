@@ -17,11 +17,7 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
 
-  # STT 서버 (faster-whisper) 는 만들어지면 여기에 추가
-  # stt:
-  #   build: ./stt
-  #   ports:
-  #     - "8000:8000"
+  # STT는 Spring 백엔드가 Groq API로 요청한다. 별도 Python/STT 컨테이너는 사용하지 않는다.
 
 volumes:
   mysql-data:

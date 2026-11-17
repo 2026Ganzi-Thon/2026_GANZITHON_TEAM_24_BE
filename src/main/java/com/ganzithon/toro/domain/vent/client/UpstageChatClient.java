@@ -38,6 +38,10 @@ public class UpstageChatClient {
     }
 
     public String suggest(String systemPrompt, String text) {
+        return complete(systemPrompt, text, RESPONSE_FORMAT);
+    }
+
+    public String complete(String systemPrompt, String text, Map<String, Object> responseFormat) {
         if (properties.apiKey() == null || properties.apiKey().isBlank()) {
             throw new BusinessException(ErrorCode.AI_NOT_CONFIGURED);
         }
@@ -48,7 +52,7 @@ public class UpstageChatClient {
                     .body(Map.of("model", properties.model(), "stream", false, "max_tokens", 1024,
                             "messages", List.of(Map.of("role", "system", "content", systemPrompt),
                                     Map.of("role", "user", "content", text)),
-                            "response_format", RESPONSE_FORMAT))
+                            "response_format", responseFormat))
                     .exchange((request, response) -> {
                         int status = response.getStatusCode().value();
                         if (status == 429) {

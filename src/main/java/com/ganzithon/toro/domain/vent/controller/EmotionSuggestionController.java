@@ -23,7 +23,8 @@ public class EmotionSuggestionController {
 
     private final EmotionSuggestionService service;
 
-    @Operation(summary = "감정 후보 제안", description = """
+    @Operation(summary = "감정 후보 제안 (이전 단독 API)", deprecated = true, description = """
+            신규 화면은 /api/v1/vent/sessions/{id}/emotions를 사용한다. 이 단독 API에는 세션 단계·삭제 처리가 없다.
             텍스트 1~2000자 → 짧은 공감과 감정 후보 2~3개. 감정을 확정하거나 저장하지 않는다.
             프론트는 직접 입력, 아직 모르겠어요, 후보 다시 보기, 건너뛰기를 제공한다.
             다시 보기는 같은 API를 재호출하며 결과가 같을 수도 있다. 매번 API 사용량이 발생한다.

@@ -22,3 +22,10 @@ jwt:
 app:
   # 회원가입 때 저장하는 약관 버전. 약관 내용이 바뀌면 올린다
   terms-version: 2026-11-v1
+
+upstage:
+  api-key: ${UPSTAGE_API_KEY:}
+  base-url: ${UPSTAGE_BASE_URL:https://api.upstage.ai/v1}
+  model: ${UPSTAGE_MODEL:solar-pro4}
+  connect-timeout: 5s
+  read-timeout: 30s

@@ -34,7 +34,13 @@ public enum ErrorCode {
     STT_FAILED(HttpStatus.BAD_GATEWAY, "STT_003", "음성을 글자로 바꾸지 못했습니다. 다시 녹음해 주세요."),
 
     // 털어놓기
-    INVALID_MESSAGE(HttpStatus.BAD_REQUEST, "CHAT_001", "글이 비어 있거나 너무 깁니다.");
+    INVALID_MESSAGE(HttpStatus.BAD_REQUEST, "CHAT_001", "글이 비어 있거나 너무 깁니다."),
+
+    // AI 감정 후보 (노션 명세 공유 전 초안)
+    AI_NOT_CONFIGURED(HttpStatus.SERVICE_UNAVAILABLE, "AI_001", "AI 연결 설정이 필요합니다."),
+    AI_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "AI_002", "AI에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요."),
+    AI_INVALID_RESPONSE(HttpStatus.BAD_GATEWAY, "AI_003", "감정 후보를 만들지 못했습니다. 직접 입력하거나 건너뛸 수 있어요."),
+    AI_BUSY(HttpStatus.SERVICE_UNAVAILABLE, "AI_004", "AI 요청이 많습니다. 잠시 후 다시 시도해 주세요.");
 
     private final HttpStatus status;
     private final String code;

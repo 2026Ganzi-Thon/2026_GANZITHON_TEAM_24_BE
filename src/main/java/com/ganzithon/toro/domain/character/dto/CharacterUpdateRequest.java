@@ -19,7 +19,7 @@ public record CharacterUpdateRequest(
         @Schema(allowableValues = {"STYLE_1", "STYLE_2", "STYLE_3", "STYLE_4", "STYLE_5", "STYLE_6"})
         @NotBlank String eyebrows,
         @Schema(description = "\"\" 또는 null이면 없음",
-                allowableValues = {"STYLE_1", "STYLE_2", "STYLE_3", "STYLE_4", "STYLE_5", "STYLE_6", ""})
+                allowableValues = {"STYLE_1", "STYLE_2", "STYLE_3", "STYLE_4", "STYLE_5", "STYLE_6", "NIGHTCAP", ""})
         String accessory
 ) implements CharacterLook {
 

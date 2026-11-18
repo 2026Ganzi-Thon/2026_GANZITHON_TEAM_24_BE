@@ -29,7 +29,8 @@ import org.springframework.web.bind.annotation.RestController;
         사용자가 꾸민 캐릭터(최대 3개). 기본 캐릭터 말랑이는 서버에 없고 프론트 고정값이다. 토큰 필요.
         꾸미기 항목은 모두 1개만 고른다. 허용 값 밖이면 CHAR_002(400).
         - 눈 eyes·입 mouth·눈썹 eyebrows: STYLE_1~6 (필수)
-        - 코 nose·악세서리 accessory: STYLE_1~6. 선택 안 함은 "" → 응답도 ""
+        - 코 nose: STYLE_1~6. 선택 안 함은 "" → 응답도 ""
+        - 악세서리 accessory: STYLE_1~6, NIGHTCAP. 선택 안 함은 "" → 응답도 ""
         - 색상 color: PEACH, PINK, YELLOW, GRAY, BLUE, MINT, LAVENDER (필수)
         - 배경은 캐릭터가 아니라 사용자 설정이라 PATCH /api/v1/users/me 의 background로 보낸다
         날짜(lastUsedAt, updatedAt)는 한국 시간 +09:00. 선택지 그림(3D 파일)은 프론트가 가진다.

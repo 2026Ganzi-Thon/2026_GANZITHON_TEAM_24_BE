@@ -15,6 +15,7 @@ import com.ganzithon.toro.global.exception.BusinessException;
 import com.ganzithon.toro.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final CharacterRepository characterRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher events;
 
     /**
      * 다른 도메인(하소연 3인칭 문장 등)에서 닉네임이 필요할 때 쓴다.
@@ -95,6 +97,7 @@ public class UserService {
         User user = getUser(userId);
         characterRepository.deleteAllByUserId(userId);
         userRepository.delete(user);
+        events.publishEvent(new UserWithdrawnEvent(userId));
     }
 
     private User getUser(Long userId) {

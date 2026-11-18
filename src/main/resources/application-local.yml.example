@@ -20,3 +20,13 @@ jwt:
 cors:
   # 쉼표로 구분 (@Value로 읽어서 YAML 목록 형식은 안 됨)
   allowed-origins: http://localhost:3000,http://localhost:5173
+
+# 실제 키는 이 example 파일에 적지 않는다.
+# IntelliJ 실행 구성 → 환경변수 UPSTAGE_API_KEY 로 설정한다.
+# 또는 복사한 application-local.yml에만 다음 설정을 추가한다.
+# upstage:
+#   api-key: "발급받은 키"
+
+# Groq도 복사한 application-local.yml 또는 GROQ_API_KEY 환경변수에만 입력한다.
+# groq:
+#   api-key: "발급받은 키"

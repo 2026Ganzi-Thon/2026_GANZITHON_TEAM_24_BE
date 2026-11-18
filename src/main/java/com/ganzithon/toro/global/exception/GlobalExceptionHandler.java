@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -53,6 +54,7 @@ public class GlobalExceptionHandler {
             HandlerMethodValidationException.class,
             MissingServletRequestParameterException.class,
             MissingServletRequestPartException.class,
+            MultipartException.class,
             MethodArgumentTypeMismatchException.class
     })
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception e) {
@@ -73,7 +75,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception e) {
-        log.error("Unhandled exception", e);
+        // 외부 AI 응답이나 녹음 파일명이 예외 메시지/스택의 원인에 포함될 수 있다.
+        log.error("Unhandled exception type={}", e.getClass().getSimpleName());
         ErrorCode code = ErrorCode.INTERNAL_ERROR;
         return ResponseEntity.status(code.getStatus()).body(ApiResponse.fail(code));
     }

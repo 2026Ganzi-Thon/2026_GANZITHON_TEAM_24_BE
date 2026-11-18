@@ -13,7 +13,14 @@ spring:
     multipart:
       # 녹음 파일 크기 제한 (넘으면 STT_002)
       max-file-size: 10MB
-      max-request-size: 10MB
+      max-request-size: 11MB
+      # 허용된 녹음은 디스크 임시 파일 대신 메모리에서 처리
+      file-size-threshold: 11MB
+
+server:
+  tomcat:
+    # 파일 제한 초과 시에도 요청 한도 내 잔여 본문을 읽어 STT_002 응답을 전달한다.
+    max-swallow-size: 11MB
 
 jwt:
   secret: ${JWT_SECRET}
@@ -22,3 +29,22 @@ jwt:
 app:
   # 회원가입 때 저장하는 약관 버전. 약관 내용이 바뀌면 올린다
   terms-version: 2026-11-v1
+
+upstage:
+  api-key: ${UPSTAGE_API_KEY:}
+  base-url: ${UPSTAGE_BASE_URL:https://api.upstage.ai/v1}
+  model: ${UPSTAGE_MODEL:solar-pro4}
+  connect-timeout: 5s
+  read-timeout: 30s
+
+groq:
+  api-key: ${GROQ_API_KEY:}
+  base-url: ${GROQ_BASE_URL:https://api.groq.com/openai/v1}
+  model: ${GROQ_STT_MODEL:whisper-large-v3-turbo}
+  connect-timeout: 5s
+  read-timeout: 45s
+
+vent:
+  session-ttl: 15m
+  cleanup-interval-ms: 30000
+  max-sessions: 256

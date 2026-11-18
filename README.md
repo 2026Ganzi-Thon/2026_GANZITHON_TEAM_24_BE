@@ -44,6 +44,10 @@ com.ganzithon.toro
 
 ## 규칙
 
+AI·STT 전체 흐름: [설정·세션·API 사용 안내](docs/ai-stt-flow.md)
+
+이전 감정 후보 단독 API: [최초 연결 안내](docs/upstage-emotions.md)
+
 - 응답은 항상 `ApiResponse`로 감싼다. 실패는 `throw new BusinessException(ErrorCode.XXX)`.
 - 새 에러 코드는 `ErrorCode`에 추가하고 노션 에러 코드 표도 같이 고친다.
 - 로그인 사용자는 컨트롤러에서 `@AuthenticationPrincipal AuthUser user`로 받는다.
